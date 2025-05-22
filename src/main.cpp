@@ -118,31 +118,31 @@ void draw(gameObjekt& temp) {
 
 void drawAlien(gameObjekt& temp) {
     for(int i=1; i < 8; i+=2){
-        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY, 255, 0, 0);
+        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY + 6, 255, 0, 0);
     }
     for(int i=2; i < 7; i++){
-        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 1, 255, 0, 0);
+        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 1 + 6, 255, 0, 0);
     }
     for(int i=0; i < 9; i++){
-        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 2, 0, 0, 255);
+        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 2 + 6, 0, 0, 255);
     }
     for(int i=0; i < 9; i++){
         if((i!=1) && (i!=4) && (i!=7)){
-            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 3, 0, 0, 255);
+            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 3 + 6, 0, 0, 255);
         }
         for(int i=1; i < 8; i++){
-            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 4, 0, 0, 255);
+            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 4 + 6, 0, 0, 255);
         }
         for(int i=2; i < 7; i++){
             if((i!=4) && (i!=5) )
-                dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 5, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 5 + 6, 255, 255, 255);
         }
         for(int i=2; i < 7; i++){
             if((i!=3) && (i!=4) && (i!=5))
-                dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 6, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 6 + 6, 255, 255, 255);
         }
         for(int i=3; i < 6; i++){
-            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX + i, GameFieldY - temp.sourceY - 7, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - 7 + 6, 255, 255, 255);
         }
     }
 }
@@ -151,7 +151,7 @@ void drawShot(gameObjekt& temp) {
   Serial.println("Im here");
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
-          dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - j, 255, 255, 255);
+          dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - j + 6, 255, 255, 255);
         }
     }
 }
@@ -326,7 +326,7 @@ void drawUI(){
 }
 
 void testBoxes() {
-    gameObjects.emplace_back(ALIEN, 10, 10); // Erstellt ein neues Spielobjekt direkt in der Liste
+    gameObjects.emplace_back(SHOT, 5, 5); // Erstellt ein neues Spielobjekt direkt in der Liste
 
     auto it = gameObjects.begin();
     std::advance(it, 1); // Geht zwei Elemente weiter in der Liste
@@ -345,5 +345,6 @@ void loop() {
         Serial.printf("%d\n", arr[i]);
     }
     sleep(1);
+    showHitboxField();
     // Loop-Logik hier
 }

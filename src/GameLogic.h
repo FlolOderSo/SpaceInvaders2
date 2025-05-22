@@ -10,7 +10,7 @@ const int SHOT = 1;
 const int ALIEN = 2;
 
 const int GameFieldX = 64;
-const int GameFieldY = 64;
+const int GameFieldY = 58;
 
 int GameField[GameFieldX][GameFieldY]; // 64x64 Spielfeld mit 6 Pixel hohen Bereich für Punkte und Leben
 
@@ -48,6 +48,11 @@ void insert(gameObjekt obj) {
 void setupGame() {
     std::srand(std::time(0));
     gameObjects.emplace_back(SPACESHIP, 0, 0); // Das Raumschiff initialisieren
+    for(int i = 0; i<GameFieldY-1;i++){
+        for(int j = 0; j<GameFieldX-1; j++){
+            GameField[i][j] = 0;
+        }
+    }
 }
 
 void drawHitboxSpaceship(gameObjekt &temp) {
@@ -63,10 +68,10 @@ void drawHitboxShot(gameObjekt &temp) {
 }
 
 void drawHitboxAlien(gameObjekt &temp) {
-    for (int i = 1; i < 7; i += 2) {
+    for (int i = 1; i < 8; i += 2) {
         GameField[temp.sourceX + i][temp.sourceY] = ALIEN;
     }
-    for (int i = 2; i < 6; i++) {
+    for (int i = 2; i < 7; i++) {
         GameField[temp.sourceX + i][temp.sourceY + 1] = ALIEN;
     }
     for (int j = 0; j < 2; j++) {
@@ -74,16 +79,31 @@ void drawHitboxAlien(gameObjekt &temp) {
             GameField[temp.sourceX + i][temp.sourceY + 2 + j] = ALIEN;
         }
     }
-    for (int i = 1; i < 7; i++) {
+    for (int i = 1; i < 8; i++) {
         GameField[temp.sourceX + i][temp.sourceY + 4] = ALIEN;
     }
     for (int j = 0; j < 2; j++) {
-        for (int i = 2; i < 6; i++) {
+        for (int i = 2; i < 7; i++) {
             GameField[temp.sourceX + i][temp.sourceY + 5 + j] = ALIEN;
         }
     }
-    for (int i = 3; i < 5; i++) {
-        GameField[temp.sourceX + i][temp.sourceY + 6] = ALIEN;
+    for (int i = 3; i < 6; i++) {
+        GameField[temp.sourceX + i][temp.sourceY + 7] = ALIEN;
+    }
+}
+
+void showHitboxField() {
+    for(int i = GameFieldY-1; i>0; i--){
+        for(int j = GameFieldX-1; j>0; j--){
+            if(GameField[j][i]==0){
+                Serial.print("0");
+            }
+            else{
+                Serial.print(GameField[j][i]);
+            }
+            Serial.print(" ");
+        }
+        Serial.printf("\n");
     }
 }
 
