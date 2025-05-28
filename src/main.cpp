@@ -66,9 +66,6 @@ void setup() {
     fps_timer = millis();
 
     setupGame();
-    testBoxes();
-    drawUI();
-
 }
 
 void scoreToArr(int zahl, int array[8]) {
@@ -101,7 +98,6 @@ void scoreToArr(int zahl, int array[8]) {
 
 
 void draw(gameObjekt& temp) {
-  Serial.println("here i am");
   switch (temp.gameObjektKind) {
       case 0:
           break;
@@ -148,7 +144,6 @@ void drawAlien(gameObjekt& temp) {
 }
 
 void drawShot(gameObjekt& temp) {
-  Serial.println("Im here");
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
           dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY - j + 6, 255, 255, 255);
@@ -325,26 +320,26 @@ void drawUI(){
 
 }
 
-void testBoxes() {
-    gameObjects.emplace_back(SHOT, 5, 5); // Erstellt ein neues Spielobjekt direkt in der Liste
-
-    auto it = gameObjects.begin();
-    std::advance(it, 1); // Geht zwei Elemente weiter in der Liste
-
-    if (it != gameObjects.end()) { // Prüft, ob das Element existiert
-        gameObjekt& test = *it;
-        drawHitbox(test);
-        draw(test);
-    }
-}
-
 void loop() {
     int arr[5];
     scoreToArr(score, arr);
     for(int i = 0; i<5; i++){
         Serial.printf("%d\n", arr[i]);
     }
-    sleep(1);
-    showHitboxField();
-    // Loop-Logik hier
+    clearGameField();
+    for(gameObjekt& obj : gameObjects){
+        doStuff(obj);
+    }
+    for(gameObjekt& obj : gameObjects){
+        drawHitbox(obj);
+        Serial.print(obj.gameObjektKind);
+    }
+    newEnemy();
+    //showHitboxField();
+    dma_display->clearScreen();
+    drawUI();
+    for(gameObjekt& obj : gameObjects){
+        draw(obj);
+    }
+    delay(200);
 }
