@@ -4,19 +4,25 @@
 #include <ctime>
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include <FastLED.h>
+#include <motor.h>
 
 const int SPACESHIP = 0;
 const int SHOT = 1;
 const int ALIEN = 2;
+const int VOID = 9;
 
 const int GameFieldX = 64;
 const int GameFieldY = 58;
 
+const int movementSpeed = 110;
+
 int GameField[GameFieldX][GameFieldY]; // 64x64 Spielfeld mit 6 Pixel hohen Bereich für Punkte und Leben
 
 int live=3;
-int score=56789;
+int score=0;//the score
 int cooldown = 0;
+boolean left_right = false;
+boolean movement = false;
 
 struct gameObjekt {
     int gameObjektKind; // Typ des Objekts
@@ -50,16 +56,16 @@ void insert(gameObjekt obj) {
 }
 
 void clearGameField(){
-    for(int i = 0; i<GameFieldY-1;i++){
-        for(int j = 0; j<GameFieldX-1; j++){
-            GameField[i][j] = 0;
+    for(int x = 0; x<GameFieldX;x++){
+        for(int y = 0; y<GameFieldY; y++){
+            GameField[x][y] = VOID;
         }
     }
 }
 
 void setupGame() {
     std::srand(std::time(0));
-    gameObjects.emplace_back(SPACESHIP, 1, 1); // Das Raumschiff initialisieren
+    gameObjects.emplace_back(SPACESHIP, 25, 1); // Das Raumschiff initialisieren
     clearGameField();
 }
 
@@ -81,13 +87,13 @@ void newEnemy(){
         int sourceX = 1 + std::rand() % 55;
         bool check=true;
         for(int i=0; i<9; i++){
-            if(GameField[51][sourceX + i]!=0){
+            if(GameField[51][sourceX + i]!=VOID){
                 check=false;
             }
         }
         if(check){
-                insert(gameObjekt(ALIEN, sourceX, 51));
-            }
+            insert(gameObjekt(ALIEN, sourceX, 51));
+        }
     }
 }
 
@@ -113,27 +119,74 @@ void drawHitboxShot(gameObjekt &temp) {
 }
 
 void drawHitboxAlien(gameObjekt &temp) {
+    boolean gotHit = false;
+    boolean haveHit = false;
     for (int i = 1; i < 8; i += 2) {
+        if(GameField[temp.sourceX + i][temp.sourceY] == SHOT){
+            gotHit = true;
+        }
+        if(GameField[temp.sourceX + i][temp.sourceY] == SPACESHIP){
+            haveHit = true;
+        }
         GameField[temp.sourceX + i][temp.sourceY] = ALIEN;
     }
     for (int i = 2; i < 7; i++) {
+        if(GameField[temp.sourceX + i][temp.sourceY + 1] == SHOT){
+            gotHit = true;
+        }
+        if(GameField[temp.sourceX + i][temp.sourceY + 1] == SPACESHIP){
+            haveHit = true;
+        }
         GameField[temp.sourceX + i][temp.sourceY + 1] = ALIEN;
     }
     for (int j = 0; j < 2; j++) {
         for (int i = 0; i < 9; i++) {
+            if(GameField[temp.sourceX + i][temp.sourceY + 2 + j] == SHOT){
+                gotHit = true;
+            }
+            if(GameField[temp.sourceX + i][temp.sourceY + 2 + j] == SPACESHIP){
+                haveHit = true;
+            }
             GameField[temp.sourceX + i][temp.sourceY + 2 + j] = ALIEN;
         }
     }
     for (int i = 1; i < 8; i++) {
+        if(GameField[temp.sourceX + i][temp.sourceY + 4] == SHOT){
+            gotHit = true;
+        }
+        if(GameField[temp.sourceX + i][temp.sourceY + 4] == SPACESHIP){
+            haveHit = true;
+        }
         GameField[temp.sourceX + i][temp.sourceY + 4] = ALIEN;
     }
     for (int j = 0; j < 2; j++) {
         for (int i = 2; i < 7; i++) {
+            if(GameField[temp.sourceX + i][temp.sourceY + 5 + j] == SHOT){
+                gotHit = true;
+            }
+            if(GameField[temp.sourceX + i][temp.sourceY + 5 + j] == SPACESHIP){
+                haveHit = true;
+            }
             GameField[temp.sourceX + i][temp.sourceY + 5 + j] = ALIEN;
         }
     }
     for (int i = 3; i < 6; i++) {
+        if(GameField[temp.sourceX + i][temp.sourceY + 7] == SHOT){
+            gotHit = true;
+        }
+        if(GameField[temp.sourceX + i][temp.sourceY + 7] == SPACESHIP){
+            haveHit = true;
+        }
         GameField[temp.sourceX + i][temp.sourceY + 7] = ALIEN;
+    }
+    if(gotHit){
+        score+=100;
+        removeGameObjekt(temp);
+        return;
+    }
+    if(haveHit){
+        live--;
+        removeGameObjekt(temp);
     }
 }
 
@@ -176,11 +229,29 @@ void drawField() {
 }
 
 void doStuffSpaceship( gameObjekt &obj){
-    //movement
+    if (digitalRead(left)==digitalRead(right)) return;
+    else if(digitalRead(left)&&obj.sourceX<GameFieldX - 17){
+        obj.sourceX+=2;
+        movement = true;
+        startMove(1);
+        delay(movementSpeed);
+        stopMotor();
+    }
+    else if(digitalRead(right)&&obj.sourceX>1){
+        obj.sourceX-=2;
+        movement = true;
+        startMove(-1);
+        delay(movementSpeed);
+        stopMotor();
+    }
 }
 
 void doStuffShot(gameObjekt &obj){
     obj.sourceY++;
+    if(obj.sourceY >= GameFieldY - 1){
+        removeGameObjekt(obj);
+        return;
+    }
 }
 
 void doStuffAlien(gameObjekt &obj){
@@ -213,4 +284,18 @@ void doStuff(gameObjekt &temp) {
             doStuffAlien(temp);
             break;
     }
+}
+
+void spawnShot(){
+    if(cooldown<1){
+        if(digitalRead(shot)){
+            if(left_right){
+                insert(gameObjekt(SHOT, gameObjects.begin()->sourceX + 5, 2));
+            }
+            else insert(gameObjekt(SHOT, gameObjects.begin()->sourceX + 9, 2));
+            cooldown=18;
+            left_right = !left_right;
+        }
+    }
+    else cooldown--;
 }

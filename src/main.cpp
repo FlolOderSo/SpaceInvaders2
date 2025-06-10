@@ -15,6 +15,7 @@
 void draw(gameObjekt& temp);
 void drawShot(gameObjekt& temp);
 void drawAlien(gameObjekt& temp);
+void drawShip(gameObjekt& temp);
 void drawUI();
 void testBoxes();
 
@@ -65,7 +66,19 @@ void setup() {
     //Serial.println("Starting plasma effect...");
     fps_timer = millis();
 
+    
+    pinMode(in1, OUTPUT);
+    pinMode(in2, OUTPUT);
+
+    pinMode(left, INPUT);
+    pinMode(right, INPUT);
+    pinMode(shot, INPUT);
+
+    ledcSetup(pwmChannel, pwmFreq, pwmResolution);
+    ledcAttachPin(ena, pwmChannel);
+
     setupGame();
+    sleep(10);
 }
 
 void scoreToArr(int zahl, int array[8]) {
@@ -100,6 +113,7 @@ void scoreToArr(int zahl, int array[8]) {
 void draw(gameObjekt& temp) {
   switch (temp.gameObjektKind) {
       case 0:
+      drawShip(temp);
           break;
       case 1:
           drawShot(temp);
@@ -151,130 +165,143 @@ void drawShot(gameObjekt& temp) {
     }
 }
 
+void drawShip(gameObjekt& temp){
+    for (int i = 0; i < 16; i++) {
+        dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i, GameFieldY - temp.sourceY + 6, 0, 10, 0);
+    }
+    dma_display->drawPixelRGB888(GameFieldX - temp.sourceX, GameFieldY - temp.sourceY + 5, 0, 10, 0);
+    dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - 15, GameFieldY - temp.sourceY + 5, 0, 10, 0);
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 3; j++) {
+            dma_display->drawPixelRGB888(GameFieldX - temp.sourceX - i - 7, GameFieldY - temp.sourceY - j + 5, 0, 10, 0);
+        }
+    }
+}
+
 void drawNumber(int n, int x, int y){
     switch (n) {
         case 0:
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6, 255, 255, 255);
             }
             for (int i = 0; i < 3; i++){
                 for (int j = 1; j < 4; j++) {
                     if(i!=1){
-                        dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - j, 255, 255, 255);
+                        dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6 - j, 255, 255, 255);
                     }
                 }
             }
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
             break;
         case 1:
             for (int i = 0; i < 5; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x , GameFieldY - y - i, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x , GameFieldY - y - i + 6, 255, 255, 255);
             }
                 break;
         case 2:
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y - 1, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y + 5, 255, 255, 255);
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 2, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 4, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y - 3, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y  + 3, 255, 255, 255);
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
             break;
         case 3:
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y - 1, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y + 5, 255, 255, 255);
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 2, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 4, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y - 3, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y + 3, 255, 255, 255);
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
             break;
         case 4:
             for (int i = 0; i < 5; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x , GameFieldY - y - i, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x , GameFieldY - y - i + 6, 255, 255, 255);
             }  
-            dma_display->drawPixelRGB888(GameFieldX - x - 1 , GameFieldY - y - 2, 255, 255, 255); 
+            dma_display->drawPixelRGB888(GameFieldX - x - 1 , GameFieldY - y + 4, 255, 255, 255); 
             for (int i = 2; i < 5; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y - i, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y - i + 6, 255, 255, 255);
             }     
             break;
         case 5:
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y - 3, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y + 3, 255, 255, 255);
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 2, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 4, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y - 1, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y + 5, 255, 255, 255);
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
             break;
         case 6:
             for (int i = 0; i < 3; i++) {
-            dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6, 255, 255, 255);
             }
             for (int i = 0; i < 3; i++) {
                 if(i!=1){
-                    dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 1, 255, 255, 255);
+                    dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 5, 255, 255, 255);
                 }
             }
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 2, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 4, 255, 255, 255);
             }
             for (int i = 0; i < 2; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y - i - 3, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - 2, GameFieldY - y - i + 3, 255, 255, 255);
             }
             break;
         case 7:
         for (int i = 0; i < 5; i++) {
-            dma_display->drawPixelRGB888(GameFieldX - x , GameFieldY - y - i, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x , GameFieldY - y - i + 6, 255, 255, 255);
             }
             for (int i = 1; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
             break;
         case 8:
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 6, 255, 255, 255);
             }
             for (int i = 0; i < 3; i++){
                 for (int j = 0; j < 3; j++) {
                     if(i!=1){
-                        dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - j - 1, 255, 255, 255);
+                        dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - j + 5, 255, 255, 255);
                     }
                 }
             }
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
-            dma_display->drawPixelRGB888(GameFieldX - x - 1, GameFieldY - y - 2, 255, 255, 255);
+            dma_display->drawPixelRGB888(GameFieldX - x - 1, GameFieldY - y + 4, 255, 255, 255);
             break;
         case 9:
             for (int i = 0; i < 2; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y - i, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x, GameFieldY - y - i + 6, 255, 255, 255);
             }
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 2, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 4, 255, 255, 255);
             }
             for (int i = 0; i < 3; i++) {
                 if(i!=1){
-                    dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 3, 255, 255, 255);
+                    dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 3, 255, 255, 255);
                 }
             }
             for (int i = 0; i < 3; i++) {
-                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y - 4, 255, 255, 255);
+                dma_display->drawPixelRGB888(GameFieldX - x - i, GameFieldY - y + 2, 255, 255, 255);
             }
             break;
         default:
@@ -283,6 +310,7 @@ void drawNumber(int n, int x, int y){
 }
 
 void drawScore(){
+    Serial.println("drawing Score");
     int arr[8];
     scoreToArr(score, arr);
     int x = 0;
@@ -290,7 +318,6 @@ void drawScore(){
         x =((8-i) * 4) - 2; 
         drawNumber(arr[i], x, 60);
     }
-
 }
 
 void drawUI(){
@@ -321,15 +348,12 @@ void drawUI(){
 }
 
 void loop() {
-    int arr[5];
-    scoreToArr(score, arr);
-    for(int i = 0; i<5; i++){
-        Serial.printf("%d\n", arr[i]);
-    }
+    movement = false;
     clearGameField();
     for(gameObjekt& obj : gameObjects){
         doStuff(obj);
     }
+    spawnShot();
     for(gameObjekt& obj : gameObjects){
         drawHitbox(obj);
         Serial.print(obj.gameObjektKind);
@@ -337,9 +361,10 @@ void loop() {
     newEnemy();
     //showHitboxField();
     dma_display->clearScreen();
-    drawUI();
     for(gameObjekt& obj : gameObjects){
         draw(obj);
     }
-    delay(200);
+    drawUI();
+    //showHitboxField(); // enable for debugng, but this is realy bad for performance
+    if(!movement)delay(movementSpeed);
 }
